@@ -17,6 +17,7 @@
 
 # large input 
 data/*.h5ad
+data/*.h5seurat
 
 # Output files from R CMD check
 /*.Rcheck/

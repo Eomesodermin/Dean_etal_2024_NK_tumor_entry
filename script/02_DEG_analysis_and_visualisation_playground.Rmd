@@ -1,5 +1,5 @@
 ---
-title: "Kaede_dataset_preprocessing"
+title: "Kaede_dataset_playground"
 author: "Dillon Corvino"
 date: "01/02/2024"
 output:
@@ -76,138 +76,20 @@ library(dplyr)
 
 ## Loading and formatting dataset {.tabset}
 
-### convert h5ad object to h5seurat object
-```{r convert_dataset}
-
-if(long.compute){
-  
-  # issue converting h5ad object to h5seurat object using seurat functions
-  # therefore use alternative approach using zellkonverter
-  #BiocManager::install("zellkonverter")
-  
-  library("zellkonverter")
-  
-  ad <- readH5AD("data/processed_NK_concat.h5ad")
-  
-  kaede.seurat <- as.Seurat(ad, counts = "X", data = NULL)
-  
-  
-  
-  #SeuratDisk
-  #H5ADToH5Seurat(source, dest, assay = "RNA", overwrite = FALSE, verbose = TRUE)
-
-  # save object as seurat object
-  SaveH5Seurat(kaede.seurat, "data/kaede.h5seurat", overwrite = TRUE)
-  
-}
-
-
-```
-
 ### load dataset
 ```{r load_dataset}
 
-  # load dataset
-  kaede.seurat <- LoadH5Seurat("data/kaede.h5seurat")
-  
-  kaede.seurat # 16,665 genes across 12,843 cells
-  
- 
-```
- 
-### Broad visualisation
-```{r vis_dataset}
+# load dataset
+kaede.seurat <- LoadH5Seurat("saves/kaede_imputed.h5Seurat")
 
-  
-output.dir <- "results/data_overview/"
-if(!dir.exists(output.dir)){
-  dir.create(output.dir, 
-             recursive = T)}
+kaede.seurat # 16,665 genes across 12,843 cells
 
-head(kaede.seurat@meta.data) 
-
-
-
-vars.plot <- c("colour", "sort_group", "batch", "time", "celltype_cluster_paper")
-
-for(i in seq_along(vars.plot)){
-  
-  print(scCustomize::DimPlot_scCustom(kaede.seurat, 
-                                      reduction = "X_umap", 
-                                      group.by = vars.plot[i], 
-                                      pt.size = 1,
-                                      label = TRUE,
-                                      figure_plot = TRUE)
-  )
-  
-  
-  dev.copy(pdf, paste0(output.dir, "UMAP_kaede_grouped_by_", vars.plot[i], ".pdf"))
-  dev.off()
-  
-}
-
-goi <- grep("Gzm.*", rownames(kaede.seurat), value = T)
-goi <- c(goi, "Nkg7", "Itga1", "Itga2", "Dgat1", "Dgat2")
-
-
-
-goi <- c("Itga1", "Cd160", "Cd3e", "Eomes", "Tbx21")
-
-scCustomize::Stacked_VlnPlot(kaede.seurat, 
-                             features = goi,
-                             pt.size = 0,
-                             group.by = "time")
-
-dev.copy(pdf, paste0(output.dir, "Vlnplot_kaede_grouped_by_colour.pdf"))
-dev.off()
-
-
-
-
-```
- 
-
- 
-## Imputation {.tabset}
-
-### Imputate gene expression
-```{r imputation}
-
-if(long.compute){
-  
-  output.dir <- "saves/"
-  if(!dir.exists(output.dir)){
-    dir.create(output.dir, 
-               recursive = T)}
-  
-  
-  # check that genes of interest are in variable genes list 
-  kaede.seurat # 16,665 genes across 12,843 cells
-  
-  DefaultAssay(kaede.seurat) <- "originalexp"
-  
-  
-  kaede.seurat <- FindVariableFeatures(kaede.seurat)
-  
-
-  kaede.seurat <- SeuratWrappers::RunALRA(kaede.seurat)
-  
-  # The matrix went from 14.71% nonzero to 48.12% nonzero
-  
-  # Export dataset for easy import
-  SeuratDisk::SaveH5Seurat(kaede.seurat, "saves/kaede_imputed.h5Seurat", overwrite = TRUE)
-  
-  DefaultAssay(kaede.seurat) <- "originalexp"
-  
-}
-
-
+DefaultAssay(kaede.seurat) <- "originalexp"
 ```
 
- 
-  
-### DEG analysis
-```{r remedy001}
+### Clean and filter dataset for just NK cells at 48hours
+
+```{r filter_dataset}
 
 # clean dataset, keep only 48 hour timepoint as this is by far the timepoint with majority of the cells both red and green 
 
@@ -233,8 +115,14 @@ unique(Idents(kaede.seurat.NK))
 
 kaede.seurat.NK <- subset(kaede.seurat.NK, idents = c("ILC", "NKT"), invert = TRUE)
 
+# clean environment
+rm(kaede.seurat)
+gc()
+```
 
 
+### DEG analysis
+```{r DEG_analyis}
 Idents(kaede.seurat.NK) <- kaede.seurat.NK@meta.data$time
 unique(Idents(kaede.seurat.NK))
 
@@ -277,8 +165,8 @@ pos.sig
 
 
 kaede.seurat.NK <- AddModuleScore(kaede.seurat.NK,
-                             features = list(cd160sig = pos.sig), 
-                             name = "CD160_sig")
+                                  features = list(cd160sig = pos.sig), 
+                                  name = "CD160_sig")
 
 
 head(kaede.seurat@meta.data)
@@ -300,8 +188,8 @@ VlnPlot_scCustom(kaede.seurat.NK,
 
 
 RidgePlot(kaede.seurat.NK, 
-                 features = "CD160_sig1", 
-                 group.by = "time")
+          features = "CD160_sig1", 
+          group.by = "time")
 
 
 # IFN-signalling signature 
@@ -311,9 +199,9 @@ kaede.seurat.NK
 
 
 ```
- 
- 
- 
+
+
+
 ### DGAT expression
 ```{r DGAT_expression}
 
@@ -325,24 +213,24 @@ scCustomize::Stacked_VlnPlot(kaede.seurat,
                              pt.size = 0,
                              group.by = "time")
 
-  dev.copy(pdf, paste0(output.dir, "Vlnplot_kaede_grouped_by_colour_dgat.pdf"))
-  dev.off()
+dev.copy(pdf, paste0(output.dir, "Vlnplot_kaede_grouped_by_colour_dgat.pdf"))
+dev.off()
 
-  
-  Idents(kaede.seurat) <- kaede.seurat@meta.data$celltype_cluster_paper
-  temp.seurat <- subset(kaede.seurat, idents = c("NK_1", "NK_2", "NK_5"))
-  scCustomize::Stacked_VlnPlot(temp.seurat, 
-                               features = goi,
-                               pt.size = 0.1,
-                               group.by = "celltype_cluster_paper")
-  
-  dev.copy(pdf, paste0(output.dir, "Vlnplot_kaede_select_NK_groups_dgat.pdf"))
-  dev.off()
-  
-  
-  
-  
-  
+
+Idents(kaede.seurat) <- kaede.seurat@meta.data$celltype_cluster_paper
+temp.seurat <- subset(kaede.seurat, idents = c("NK_1", "NK_2", "NK_5"))
+scCustomize::Stacked_VlnPlot(temp.seurat, 
+                             features = goi,
+                             pt.size = 0.1,
+                             group.by = "celltype_cluster_paper")
+
+dev.copy(pdf, paste0(output.dir, "Vlnplot_kaede_select_NK_groups_dgat.pdf"))
+dev.off()
+
+
+
+
+
 ```
 
 
