@@ -15,9 +15,8 @@
 # Output files from R CMD build
 /*.tar.gz
 
-# large input 
-data/*.h5ad
-data/*.h5seurat
+# results
+results/**/**
 
 # Output files from R CMD check
 /*.Rcheck/

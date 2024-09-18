@@ -8,3 +8,9 @@ results/data_overview/UMAP_kaede_grouped_by_sort_group.pdf filter=lfs diff=lfs m
 results/data_overview/UMAP_kaede_grouped_by_time.pdf filter=lfs diff=lfs merge=lfs -text
 results/data_overview/Vlnplot_kaede_grouped_by_colour_dgat.pdf filter=lfs diff=lfs merge=lfs -text
 results/data_overview/Vlnplot_kaede_select_NK_groups_dgat.pdf filter=lfs diff=lfs merge=lfs -text
+data/List[[:space:]]of[[:space:]]metabolic[[:space:]]molecules[[:space:]]to[[:space:]]interrogate[[:space:]]in[[:space:]]RNA-seq[[:space:]]data.xlsx filter=lfs diff=lfs merge=lfs -text
+data/NK_Kaede[[:space:]]data[[:space:]]description.docx filter=lfs diff=lfs merge=lfs -text
+data/kaede.h5seurat filter=lfs diff=lfs merge=lfs -text
+data/processed_NK_concat.h5ad filter=lfs diff=lfs merge=lfs -text
+data/s41467-024-44789-z.pdf filter=lfs diff=lfs merge=lfs -text
+data/CD160_DEG_QLF_S.PosvsNeg.csv filter=lfs diff=lfs merge=lfs -text
