@@ -284,7 +284,7 @@ goi
 
 
 scCustomize::Stacked_VlnPlot(kaede.seurat.NK, 
-                             features = goi,
+                             features = goi[4:7],
                              pt.size = 0,
                              group.by = "time")
 
@@ -356,21 +356,15 @@ if(!dir.exists(output.dir)){
 }
 
 
+cytotoxicity.markers <- c("Gzma", "Gzmb", "Gzmh", "Gzmk", "Gzmm", "Gnly", "Prf1", "Nkg7")
 
+scCustomize::Stacked_VlnPlot(kaede.seurat.NK, 
+                              features = cytotoxicity.markers,
+                              pt.size = 0,
+                              group.by = "time")
 
-table(kaede.seurat@meta.data$celltype_cluster_paper, kaede.seurat@meta.data$time)
-
-
-
-##############################
-# remove ILC1 and NKT populations 
-##############################
-Idents(kaede.seurat) <- kaede.seurat@meta.data$celltype_cluster_paper
-unique(Idents(kaede.seurat))
-
-
-temp.seurat <- subset(kaede.seurat, idents = c("ILC", "NKT"), invert = TRUE)
-
+dev.copy(pdf, paste0(output.dir, "Vlnplot_kaede_NK_only_cytotoxic_molecules.pdf"))
+dev.off()
 
 
 
@@ -388,12 +382,6 @@ early.markers %>%
 tibble::rownames_to_column() %>%
   dplyr::filter(rowname %in% cytotoxicity.markers)
 
-cytotoxicity.markers <- c("Gzma", "Gzmb", "Gzmh", "Gzmk", "Gzmm", "Gnly", "Prf1", "Nkg7")
-
-scCustomize::Stacked_VlnPlot(temp.seurat, 
-                              features = cytotoxicity.markers,
-                              pt.size = 0,
-                              group.by = "time")
 
 
 Idents(temp.seurat) <- temp.seurat@meta.data$time
