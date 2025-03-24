@@ -1,5 +1,5 @@
 ---
-title: "Kaede_dataset_playground"
+title: "Kaede_DGAT_analysis_proteomics_project"
 author: "Dillon Corvino"
 date: "01/02/2024"
 output:
@@ -179,6 +179,109 @@ dev.off()
 
 ```
 
+
+### Genes of interest - Collagen and Mboat proteins
+```{r genes_of_interest}
+
+# Load necessary libraries
+library(Seurat)
+library(ggplot2)
+library(stringr)
+
+# Define input and output paths
+input.path  <- "data/susanna_gene_lists/"
+output.dir  <- "results/DGAT_project/"
+if(!dir.exists(output.dir)){
+  dir.create(output.dir, 
+             recursive = T)
+  
+}
+# Read gene lists into named list
+gene.list.files <- list.files(input.path, pattern = "\\.txt$", full.names = TRUE)
+
+gene.sets <- lapply(gene.list.files, function(f){
+  df <- read.table(f, header = TRUE, sep = "\t", stringsAsFactors = FALSE)
+  return(as.character(df[[1]]))  # grab first column regardless of name
+})
+
+names(gene.sets) <- basename(gene.list.files) |>
+  str_replace_all(" ", "_") |>
+  str_remove("\\.txt$")
+
+# Set default assay
+DefaultAssay(kaede.seurat.NK) <- "originalexp"
+
+# Compute pseudobulk once
+pseudo.by.cluster.time <- AggregateExpression(
+  kaede.seurat.NK,
+  assays       = "originalexp",
+  return.seurat = TRUE,
+  group.by     = c("celltype_cluster_paper", "time")
+)
+
+pseudo.by.time <- AggregateExpression(
+  kaede.seurat.NK,
+  assays       = "originalexp",
+  return.seurat = TRUE,
+  group.by     = "time"
+)
+
+
+gene.sets <- lapply(gene.sets, stringr::str_to_title)
+
+# Generate heatmaps
+for(gene.set.name in names(gene.sets)){
+  
+  genes <- gene.sets[[gene.set.name]]
+  
+  p1 <- DoHeatmap(
+    pseudo.by.cluster.time,
+    features    = genes,
+    draw.lines  = FALSE,
+    raster      = FALSE
+  ) + scale_fill_gradient2(low = "blue", mid = "white", high = "red") +
+    ggtitle(paste("Pseudobulk by cluster/time:", gene.set.name))
+  
+  ggsave(
+    filename = paste0(output.dir, "Heatmap_cluster_time_", gene.set.name, ".pdf"),
+    plot     = p1, width = 8, height = 10
+  )
+  
+  p2 <- DoHeatmap(
+    pseudo.by.time,
+    features    = genes,
+    draw.lines  = FALSE,
+    raster      = FALSE
+  ) + scale_fill_gradient2(low = "blue", mid = "white", high = "red") +
+    ggtitle(paste("Pseudobulk by time:", gene.set.name))
+  
+  ggsave(
+    filename = paste0(output.dir, "Heatmap_time_", gene.set.name, ".pdf"),
+    plot     = p2, width = 8, height = 10
+  )
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+```
+
+
+
 ### Metabolic genes
 ```{r metabolic_genes_overview}
 
@@ -254,88 +357,6 @@ DoHeatmap(pseudo.NK,
 
 dev.copy(pdf, paste0(output.dir, "Heatmap_pseudobulk_time_metabolic_genes.pdf"))
 dev.off()
-
-```
-
-
-### DEG analysis
-```{r DEG_analyis}
-Idents(kaede.seurat.NK) <- kaede.seurat.NK@meta.data$time
-unique(Idents(kaede.seurat.NK))
-
-DefaultAssay(kaede.seurat.NK) <- "originalexp"
-
-
-early.markers <- FindMarkers(kaede.seurat.NK, 
-                             ident.1 = "Green_48h", 
-                             ident.2 = "Red_48h",
-                             min.pct = 0.1)
-
-goi <- early.markers %>%
-  dplyr::filter(p_val_adj < 0.05) %>%
-  dplyr::top_n(50, avg_log2FC) %>%
-  rownames()
-
-early.markers %>%
-  dplyr::filter(p_val_adj < 0.05) %>%
-  arrange(desc(avg_log2FC))
-goi
-
-
-scCustomize::Stacked_VlnPlot(kaede.seurat.NK, 
-                             features = goi[4:7],
-                             pt.size = 0,
-                             group.by = "time")
-
-
-
-
-# gene signature 
-cd160.sig <- read.csv("data/CD160_DEG_QLF_S.PosvsNeg.csv")
-
-pos.sig <- cd160.sig %>%
-  dplyr::filter(FDR < 0.05) %>%
-  dplyr::top_n(50, logFC) %>%
-  dplyr::arrange(desc(logFC)) %>%
-  dplyr::pull(genes)
-
-pos.sig
-
-
-
-kaede.seurat.NK <- AddModuleScore(kaede.seurat.NK,
-                                  features = list(cd160sig = pos.sig), 
-                                  name = "CD160_sig")
-
-
-head(kaede.seurat@meta.data)
-VlnPlot_scCustom(kaede.seurat.NK, 
-                 features = "CD160_sig1", 
-                 group.by = "celltype_cluster_paper")
-
-
-VlnPlot_scCustom(kaede.seurat.NK, 
-                 features = "CD160_sig1", 
-                 group.by = "time")
-
-
-
-
-VlnPlot_scCustom(kaede.seurat.NK, 
-                 features = "Acat2", 
-                 group.by = "time")
-
-
-RidgePlot(kaede.seurat.NK, 
-          features = "CD160_sig1", 
-          group.by = "time")
-
-
-# IFN-signalling signature 
-kaede.seurat.NK
-
-
-
 
 ```
 
