@@ -1,51 +1,27 @@
-# TEMP TITLE
+# Dean et al. 2024 — NK cells on tumour entry (re-analysis + CD160 overlay)
 
-## Project Summary
+Re-analysis of the publicly available single-cell dataset from:
 
-Understand the .....
+> **Dean I, Lee CYC, Tuong ZK, et al. Rapid functional impairment of natural killer cells following tumor entry limits anti-tumor immunity.**  
+> *Nature Communications* 2024. https://doi.org/10.1038/s41467-024-44789-z  
+> Data: see original publication (Kaede photoconvertible reporter model)
 
-## To-Do
+## Dataset at a glance
+- **System:** Mouse NK cells tracked entering the tumour microenvironment using the *Kaede* photoconvertible reporter
+- **Assay:** scRNA-seq
+- **Focus:** how NK cells rapidly lose anti-tumour function after tumour entry
 
--   [ ] Placeholder
+## What this repository does
+Re-processes the Dean et al. NK-cell dataset and overlays a **CD160-associated signature** and
+related gene programmes to examine NK-cell state on tumour entry. Processed objects
+(`kaede.h5seurat`, `processed_NK_concat.h5ad`) and analysis scripts are included; large objects
+are also archived on Zenodo.
 
-## Dataset Info
+## Repository structure
+- `data/` — processed objects + dataset description (large objects mirrored to Zenodo)
+- `results/` — figures and analysis outputs
+- Setup / package scripts for reproducibility
 
--   FILL OUT
-
-    
-## Development Notes
-
--   FILL OUT
-
-## File Structure
-
-The repository contains the following top-level directories:
-
-- **`data/`** _(ignored by Git)_  
-  - Contains output from `cellranger`  
-  - Will be uploaded to Zenodo for accessibility.
-
-- **`results/`** _(ignored by Git)_  
-  - Stores processed analysis results.  
-  - Not tracked in version control.
-
-- **`saves/`** _(ignored by Git)_  
-  - Contains intermediate objects such as Seurat objects.  
-  - These files will also be uploaded to Zenodo.
-
-- **`scripts/`**  
-  - Includes all analysis and processing scripts.
-  - Tracked in version control.
-    - **`01_Preprocessing.Rmd`**
-      - Reads in `cellranger` output and performs the following 
-      - QC, Ambient RNA removal, Doublet detection, Normalisation, Integration, Dim Reduction, cluster calling
-
-## Data availability
-
-- Raw Data (Upload to GEO and provide link)  
-- `cellranger` output (upload zenodo link)
-- `seurat.objects` (upload zenodo link)
-
-## Author Information
-
--   [Dillon Corvino](https://github.com/Eomesodermin)
+---
+Part of my NK-cell single-cell research programme — see my [GitHub profile](https://github.com/Eomesodermin) and [dilloncorvino.com](https://dilloncorvino.com).  
+Author: **Dillon Corvino**
